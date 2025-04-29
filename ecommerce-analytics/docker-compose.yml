@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+      - ./scripts:/scripts
+    depends_on:
+      - mongodb
+
+  app:
+    build: .
+    container_name: ecommerce-app
+    volumes:
+      - ./data:/app/data
+      - ./scripts:/app/scripts
+    command: tail -f /dev/null  # Garde le conteneur actif
+    depends_on:
+      - mongodb
+      - spark
+
+volumes:
+  mongodb_data:
